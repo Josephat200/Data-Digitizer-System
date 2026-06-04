@@ -27,6 +27,14 @@ const queryClient = new QueryClient({
   }
 });
 
+function RootRedirect({ token }: { token: string | null }) {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    setLocation(token ? "/dashboard" : "/login");
+  }, [token, setLocation]);
+  return null;
+}
+
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { token } = useAuth();
   const [, setLocation] = useLocation();
@@ -74,10 +82,7 @@ function Router() {
     <Switch>
       <Route path="/login" component={Login} />
       <Route path="/">
-        {() => {
-          setLocation(token ? "/dashboard" : "/login");
-          return null;
-        }}
+        {() => <RootRedirect token={token} />}
       </Route>
       <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
       <Route path="/screening"><ProtectedRoute component={ScreeningList} /></Route>
