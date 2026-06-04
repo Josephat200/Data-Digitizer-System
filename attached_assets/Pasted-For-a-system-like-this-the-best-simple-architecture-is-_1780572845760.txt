@@ -1,0 +1,309 @@
+For a system like this, the best simple architecture is a 3-tier web architecture. It is lightweight, easy to develop, easy to deploy on Render, and does not consume much storage.
+
+SYSTEM ARCHITECTURE
+┌─────────────────────┐
+│      Frontend       │
+│ React + Vite        │
+│ Forms & Dashboard   │
+└──────────┬──────────┘
+           │ HTTPS
+           ▼
+┌─────────────────────┐
+│      Backend        │
+│ Node.js + Express   │
+│ Authentication      │
+│ Workflow Rules      │
+│ Validation          │
+│ Audit Logs          │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│     Database        │
+│ PostgreSQL          │
+│ 7 Main Tables       │
+└─────────────────────┘
+TECHNOLOGY STACK
+Frontend
+React
+Vite
+React Router
+Axios
+Bootstrap 5
+Why?
+Very lightweight
+Fast loading
+Small deployment size
+Easy deployment on Render
+Backend
+Node.js
+Express.js
+Why?
+Lightweight
+Easy API creation
+Large community support
+Works perfectly on Render
+Database
+PostgreSQL
+Why?
+Free on Render
+Reliable
+Supports relationships
+Perfect for clinical/research systems
+Authentication
+JWT (JSON Web Token)
+bcrypt
+Why?
+Secure
+Lightweight
+Easy session management
+Validation
+Zod
+Why?
+Small package
+Strong validation
+Easy error handling
+ORM
+Prisma
+Why?
+Easy database management
+Migration support
+Less coding errors
+DATABASE TABLES
+1. users
+id
+username
+password_hash
+full_name
+initials
+role
+created_at
+2. screening
+screening_id (PK)
+interview_date
+health_facility
+dob
+age_years
+age_months
+height
+weight
+temperature
+resp_rate
+pulse_rate
+blood_pressure
+lmp
+fundal_height
+
+inclusion_1
+inclusion_2
+inclusion_3
+inclusion_4
+inclusion_5
+
+exclusion_1
+exclusion_2
+exclusion_3
+
+eligible
+consented
+
+created_by
+created_at
+updated_at
+3. enrolment
+id
+screening_id (FK)
+
+marital_status
+husband_name
+village
+education
+occupation
+
+height
+weight
+temperature
+resp_rate
+pulse_rate
+blood_pressure
+
+gestational_age
+
+created_by
+created_at
+updated_at
+4. anc_visits
+id
+screening_id (FK)
+
+visit_number
+visit_date
+gestational_age
+weight
+bp
+fundal_height
+muac
+complaints
+medication
+next_appointment
+
+created_by
+created_at
+5. delivery
+id
+screening_id (FK)
+
+mother_weight
+temperature
+resp_rate
+pulse_rate
+blood_pressure
+oxygen_saturation
+bmi
+
+physical_abnormality
+abnormality_details
+
+delivery_date
+delivery_time
+delivery_place
+delivered_by
+delivery_mode
+
+csection_indication
+
+created_by
+created_at
+6. closeout
+id
+screening_id (FK)
+
+termination_date
+participant_status
+discontinuation_reason
+
+created_by
+created_at
+7. audit_logs
+id
+table_name
+record_id
+action
+
+old_value
+new_value
+
+reason_for_change
+
+user_initials
+timestamp
+WORKFLOW LOGIC
+Screening
+
+Create Screening Record
+
+↓
+
+Enrolment
+
+Only available if:
+
+eligible = YES
+AND
+consented = YES
+
+↓
+
+ANC Visits
+
+Only available after enrolment
+
+↓
+
+Delivery
+
+Only available after enrolment
+
+↓
+
+Closeout
+
+Available at any stage
+
+USER ROLES
+Data Manager
+
+✅ View
+
+✅ Add
+
+✅ Edit
+
+✅ Delete (with reason)
+
+✅ View reports
+
+Field Technician
+
+✅ View only
+
+❌ Add
+
+❌ Edit
+
+❌ Delete
+
+AUTOMATIC FEATURES
+Auto-generate Screening ID
+
+Example:
+
+SCR-20260604-001
+SCR-20260604-002
+BMI Auto Calculation
+BMI = Weight / Height²
+
+Warning if:
+
+BMI < 15
+BMI > 45
+Auto Save
+
+Store:
+
+User Initials
+Timestamp
+
+For every record.
+
+Session Timeout
+30 Minutes Inactivity
+→ Auto Logout
+REPORTS
+Dashboard
+
+Show:
+
+Metric	Count
+Screened	150
+Enrolled	120
+ANC Visits	310
+Deliveries	95
+Closeouts	12
+Site Summary
+Site	Screening	Enrolment	Delivery
+Bondo	20	18	15
+Siaya	40	35	30
+Kuoyo	30	25	20
+Lumumba	60	50	30
+Data Quality Report
+
+Show:
+
+Missing DOB
+Missing Weight
+Missing BP
+BMI < 15
+BMI > 45
+Missing Consent
+Missing Delivery Date

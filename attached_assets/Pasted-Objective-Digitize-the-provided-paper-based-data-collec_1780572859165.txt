@@ -1,0 +1,168 @@
+Objective 
+Digitize the provided paper-based data collection tool into a clean, user-friendly web application with 4 forms (Screening, Enrolment, Delivery, Closeout). The system must enforce workflow (Screening - Enrolment - Delivery), use Screening ID as the unique identifier, support user login, save data with user initials, store data in separate databases/tables. 
+ 
+The focus of this assignment is on: 
+•	Practical workflow implementation  
+•	Data validation  
+•	User access control  
+•	Clean and functional system design  
+The forms do not need to contain every question from the paper tools; only a representative subset is sufficient to demonstrate the system functionality. 
+ 
+Login System (Password Protected) 
+The system should include a simple secure login page requiring: 
+•	Username  
+•	Password  
+After login: 
+•	Display the logged-in user’s initials (e.g., “PA” for Patrobas Agwata)  • 	Save all submitted records with:  • User initials  
+•	Date and time stamp 
+ 
+User Access Levels 
+The system should support at least two user roles: 
+1.	Data Manager -Permissions: View records  Enter new data  and Edit existing data  
+2.	Field Technician- Permissions: View records only  
+         	 	 	 Restrictions: Cannot add or edit data  
+Have the following forms  
+•	Form 1: Screening 
+•	Form 2: Enrolment (Only accessible if Screening passed and Screening ID exists) 
+•	Form 3: Delivery (Only accessible if Enrolment record exists for the Screening ID) 
+•	Form 4: Closeout (Simple form for participants who drop out or are lost to follow-up) 
+Validation 
+•	Screening ID is the unique key across all forms. 
+•	Enrolment form should show a dropdown/search of eligible Screening IDs (Study Eligibility = Yes and consent = Yes). 
+•	Delivery form should show a dropdown of enrolled Screening IDs. 
+•	Closeout can be done on any Screening ID. 
+Other additional requirements 
+•	Have the system display summary of Screening/ Enrolment/ Delivery numbers either as raw numbers or in form of a table per site 
+Data Storage 
+Use any DB with atleast 4 separate tables: 
+ 
+SCREENING  
+Date of interview: DD/MMM/YYYY   	(Auto fill today’s date but allow changes) 
+Health Facility:  Bondo    Siaya Kuoyo     Lumumba 	 	 
+Date of birth: DD/MMM/YYYY 	 	 	(Allow dates between 1/1/1972 and 
+1/1/2006) 
+ 
+Age:  __ __ years __ __ months 
+ 
+A. Initial assessment 
+1.	Height:  __ __ __ cm 
+2.	Weight:  __ __. __ kg 
+3.	Vital signs: i. Temperature__ __. __C  Axillary  Oral  Tympanic________________________ 
+4.	Ii. Respiratory rate ----    iii. Pulse rate  ---- 
+5.	iv. Blood pressure __ __ __ / __ __  __ mm HgFirst day of the Last Menstrual Period (LMP):   
+DD/MMM/YYYY Unknown 
+6.	Fundal height:   __ __ cm 
+ 
+B. Inclusion Criteria (ALL must be ‘Yes’ to be eligible) 	 	 	 	 	 
+ 	 
+1.	Resident of village within 15 km of study health facility   	 	Yes  No 
+2.	Pregnancy confirmed by urine test or ultrasound 	 	 	 	Yes  No 
+3.	Gestation<31 weeks by fundal height, ultrasound or within 4 weeks of quickening Yes
+  No 
+4.	Consents to HIV testing and counseling   	 	 	 	Yes  No 
+5.	Willing to  deliver in the labor ward of the study hospital 	 	 	Yes  No 
+ 
+C. Exclusion Criteria (ALL must be ‘No’ or ‘Don’t Know’ to be eligible) 
+1.	Multiple pregnancy (twins, triplets, etc.)  	 	 	Yes  No Don’t Know 
+2.	History of Fistula Repair or Leg/spinal deformity  	 	 	Yes  No
+ 	Don’t Know 
+3.	Unable to give informed consent (for example due to mental disability) Yes  No 
+ 
+D. Study Eligibility 
+1. Subject meets all inclusion criteria and none of the exclusion criteria Yes  No 
+If yes, did the woman consent to participate in the study Yes  No 
+If no, reason for refusal   Needs to consult   Other 
+Screening ID ----- 
+ 
+ 
+ 
+ENROLMENT  DEMOGRAPHICS 
+Screening ID ----- 
+Health Facility:  Bondo    Siaya Kuoyo     Lumumba 	 	 	 
+Date of birth: DD/MMM/YYYY 	 	 	(Allow dates between 1/1/1972 and 
+1/1/2006) 
+ 
+Age:  __ __ years __ __ months 
+ 
+D. Demographics 
+1.	Marital status:   Single   Married   Widowed  	 Other If married, husband’s name: ________________________________ 
+2.	Village of residence:  ______________________________________ 
+3.	Subject’s Education level:    Never attended school 
+	Primary 
+	Secondary  University/College 4. Subject’s Occupation: 
+	Farmer 
+	Business woman 
+	Fisherman/ Fish monger 
+	Home maker 
+	Salaried worker 
+	Other, Specify 
+5.	Health Facility:   Bondo     Siaya  Kuoyo      Lumumba 	 
+6.	Height:  __ __ __ cm 
+7.	Weight:  __ __. __ kg 
+8.	Vital signs: i. Temperature__ __. __C  	Axillary  Oral  Tympanic________________________ 
+9.	Ii. Respiratory rate ----    iii. Pulse rate  ---- 
+10.	iv. Blood pressure __ __ __ / __ __  __ mm Hg 
+11.	Estimated gestational age by ultrasound  ---- 
+ 
+DELIVERY 
+Date of interview:  DD/MMM/YYYY    	 	(Auto fill today’s date but allow changes) 
+Screening ID ----- 	 	 	 
+ 
+A. Physical Examination 
+1.	Mother’s weight:  __ __ . __ kg  (post-partum) 
+2.	Vital signs:   	i. Temperature:  __ __ . __ ◦C Axillary  Oral  Tympanic ii. Respiratory rate__ __ breaths per minute 
+iii. Pulse rate__ __ __ beats per minute iv. Blood pressure __ __ __ / __ __ __ mm Hg 
+v. Oxygen saturation ___  ___%   On room air   With supplemental oxygen 
+3.	Body Mass index _ _Unknown 
+4.	Abnormality on physical exam of mother?   	 	 	 	Yes  	No 
+ 	If yes to Q.4, specify:  ________________________________________________ 
+ 
+C. Delivery History 
+1.	Date of Delivery:  DD/MMM/YYYY     (Auto fill today’s date but allow changes) 
+2.	Time of Delivery: __ __ : __ __ (24 hour) 
+3.	Where was the infant delivered?   
+	Bondo  Lumumba    Siaya   Other hospital/clinic, specify: _______________ 
+	Home  Other location, specify:  ______________________ 
+ 
+4.	Who delivered the child? 
+	Doctor   Clinical Officer  Nurse  Midwife  Traditional Birth Attendant 
+	Village Health Worker  Other, specify: ________________  Don’t know 
+ 
+5.	Mode of delivery? 
+	Spontaneous vaginal delivery (Normal)   Episiotomy  Vacuum   Forceps 
+	C-section 	 	 Other, specify:  ______________________ 
+If answer to 5 is C-section, what was the indication?  ELSE SKIP to 6.  
+ Prolonged labor 	 	 Fetal distress 	 amniotic fluid   	 	 Meconium-stained 
+ Antepartum hemorrhage   Pre-eclamptic toxemia 	 Cephalopelvic disproportion 
+ Malpresentation 	 	 Elective C-section  	 Pregnancy-induced hypertension 
+ Other, specify: ___________________________  
+ 
+CLOSEOUT 	 Don’t know 
+1.	Date of interview:  DD/MMM/YYYY   	 	 changes) 
+2.	Screening ID ----- 	(Auto fill today’s date but allow 
+3. Date of Study termination:  DD/MMM/YYYY   	 	 	(Auto fill today’s date but 
+allow changes) 
+4. 	What was the participant’s status?  Completed study visits 
+	Participation terminated prior to completion of study visits 
+	Screen failure before enrolment 
+ 
+4. 	If the participant did not complete the study after enrolment, reason for discontinuation:  Adverse event: 
+___________________________________________________________________ 
+	Death (occurring on [ D ][ D ]/[ M ][ M ][ M ]/20[ Y ][ Y ]) 
+	Lost to follow-up  Physician decision  Protocol deviation: 
+________________________________________________________________  Screen failure 
+	Study terminated by sponsor 
+	Withdrawal by participant. Reason (if known): __________________________________________   Other: 
+__________________________________________________________________________ 
+ 
+ 
+ 
+KEMRI- CGHR: INFLUENZA PROGRAM 
+June, 2026 
+1.	Automatically log every create, update, or delete action with: User Initials, Timestamp, Old Value vs New Value, and Reason for Change. 
+2.	Allow users to view, edit and delete (with reason). 
+3.	BMI auto-calculation and warning if outside realistic range (15–45). 
+4.	Have a “Data Quality Report” page showing records with missing or suspicious data. 
+5.	Add new ANC visit form. Fields: Visit Number, Visit Date, Gestational Age, Weight, BP, Fundal Height, MUAC, Complaints, Medication given, Next appointment date. 
+6.	Simple reminder list: Participants who are due for next ANC visit(ANC occurs monthly) or delivery (>36 weeks gestation) (based on gestational age) 7. Add Session Timeout (after 30 minutes of inactivity) 
+ 

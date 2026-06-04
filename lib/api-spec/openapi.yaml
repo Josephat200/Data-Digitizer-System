@@ -3,20 +3,36 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: KEMRI-CGHR Influenza Program Clinical Data Management System
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: screening
+    description: Screening records
+  - name: enrolment
+    description: Enrolment records
+  - name: anc
+    description: ANC visit records
+  - name: delivery
+    description: Delivery records
+  - name: closeout
+    description: Closeout records
+  - name: audit
+    description: Audit logs
+  - name: reports
+    description: Reports and dashboard
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +40,1339 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # Auth
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+
+  # Screening
+  /screening:
+    get:
+      operationId: listScreenings
+      tags: [screening]
+      summary: List all screenings
+      parameters:
+        - name: facility
+          in: query
+          schema:
+            type: string
+        - name: eligible
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of screenings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Screening"
+    post:
+      operationId: createScreening
+      tags: [screening]
+      summary: Create a screening record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScreeningInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Screening"
+
+  /screening/{screeningId}:
+    get:
+      operationId: getScreening
+      tags: [screening]
+      summary: Get a screening record
+      parameters:
+        - name: screeningId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Screening record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Screening"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateScreening
+      tags: [screening]
+      summary: Update a screening record
+      parameters:
+        - name: screeningId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScreeningUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Screening"
+    delete:
+      operationId: deleteScreening
+      tags: [screening]
+      summary: Delete a screening record
+      parameters:
+        - name: screeningId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteInput"
+      responses:
+        "200":
+          description: Deleted
+
+  /screening/eligible:
+    get:
+      operationId: listEligibleScreenings
+      tags: [screening]
+      summary: List eligible & consented screenings (for enrolment dropdown)
+      responses:
+        "200":
+          description: Eligible screenings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScreeningSummary"
+
+  # Enrolment
+  /enrolment:
+    get:
+      operationId: listEnrolments
+      tags: [enrolment]
+      summary: List all enrolments
+      parameters:
+        - name: facility
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of enrolments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Enrolment"
+    post:
+      operationId: createEnrolment
+      tags: [enrolment]
+      summary: Create an enrolment record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnrolmentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Enrolment"
+
+  /enrolment/{screeningId}:
+    get:
+      operationId: getEnrolment
+      tags: [enrolment]
+      summary: Get an enrolment record by screening ID
+      parameters:
+        - name: screeningId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Enrolment record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Enrolment"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateEnrolment
+      tags: [enrolment]
+      summary: Update an enrolment record
+      parameters:
+        - name: screeningId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnrolmentUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Enrolment"
+    delete:
+      operationId: deleteEnrolment
+      tags: [enrolment]
+      summary: Delete an enrolment record
+      parameters:
+        - name: screeningId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteInput"
+      responses:
+        "200":
+          description: Deleted
+
+  /enrolment/enrolled:
+    get:
+      operationId: listEnrolledScreenings
+      tags: [enrolment]
+      summary: List enrolled screening IDs (for delivery dropdown)
+      responses:
+        "200":
+          description: Enrolled screening IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScreeningSummary"
+
+  # ANC Visits
+  /anc:
+    get:
+      operationId: listAncVisits
+      tags: [anc]
+      summary: List ANC visits
+      parameters:
+        - name: screeningId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of ANC visits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AncVisit"
+    post:
+      operationId: createAncVisit
+      tags: [anc]
+      summary: Create an ANC visit record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AncVisitInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AncVisit"
+
+  /anc/{id}:
+    get:
+      operationId: getAncVisit
+      tags: [anc]
+      summary: Get an ANC visit record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: ANC visit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AncVisit"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateAncVisit
+      tags: [anc]
+      summary: Update an ANC visit record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AncVisitUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AncVisit"
+    delete:
+      operationId: deleteAncVisit
+      tags: [anc]
+      summary: Delete an ANC visit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteInput"
+      responses:
+        "200":
+          description: Deleted
+
+  # Delivery
+  /delivery:
+    get:
+      operationId: listDeliveries
+      tags: [delivery]
+      summary: List delivery records
+      responses:
+        "200":
+          description: List of deliveries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Delivery"
+    post:
+      operationId: createDelivery
+      tags: [delivery]
+      summary: Create a delivery record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeliveryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Delivery"
+
+  /delivery/{screeningId}:
+    get:
+      operationId: getDelivery
+      tags: [delivery]
+      summary: Get a delivery record by screening ID
+      parameters:
+        - name: screeningId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Delivery record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Delivery"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateDelivery
+      tags: [delivery]
+      summary: Update a delivery record
+      parameters:
+        - name: screeningId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeliveryUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Delivery"
+    delete:
+      operationId: deleteDelivery
+      tags: [delivery]
+      summary: Delete a delivery record
+      parameters:
+        - name: screeningId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteInput"
+      responses:
+        "200":
+          description: Deleted
+
+  # Closeout
+  /closeout:
+    get:
+      operationId: listCloseouts
+      tags: [closeout]
+      summary: List closeout records
+      responses:
+        "200":
+          description: List of closeouts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Closeout"
+    post:
+      operationId: createCloseout
+      tags: [closeout]
+      summary: Create a closeout record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CloseoutInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Closeout"
+
+  /closeout/{screeningId}:
+    get:
+      operationId: getCloseout
+      tags: [closeout]
+      summary: Get a closeout record by screening ID
+      parameters:
+        - name: screeningId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Closeout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Closeout"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateCloseout
+      tags: [closeout]
+      summary: Update a closeout record
+      parameters:
+        - name: screeningId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CloseoutUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Closeout"
+    delete:
+      operationId: deleteCloseout
+      tags: [closeout]
+      summary: Delete a closeout record
+      parameters:
+        - name: screeningId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteInput"
+      responses:
+        "200":
+          description: Deleted
+
+  # Audit
+  /audit:
+    get:
+      operationId: listAuditLogs
+      tags: [audit]
+      summary: List audit logs
+      parameters:
+        - name: tableName
+          in: query
+          schema:
+            type: string
+        - name: recordId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Audit logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditLog"
+
+  # Reports & Dashboard
+  /reports/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [reports]
+      summary: Dashboard summary totals
+      responses:
+        "200":
+          description: Summary counts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /reports/site-summary:
+    get:
+      operationId: getSiteSummary
+      tags: [reports]
+      summary: Per-site summary table
+      responses:
+        "200":
+          description: Site breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SiteSummary"
+
+  /reports/data-quality:
+    get:
+      operationId: getDataQualityReport
+      tags: [reports]
+      summary: Data quality issues report
+      responses:
+        "200":
+          description: Data quality issues
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataQualityReport"
+
+  /reports/reminders:
+    get:
+      operationId: getReminders
+      tags: [reports]
+      summary: Upcoming ANC visits and deliveries due
+      responses:
+        "200":
+          description: Reminders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reminder"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    # Auth
+    LoginInput:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      required: [id, username, fullName, initials, role]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        fullName:
+          type: string
+        initials:
+          type: string
+        role:
+          type: string
+
+    DeleteInput:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+
+    # Screening
+    Screening:
+      type: object
+      required: [screeningId, interviewDate, healthFacility, createdBy, createdAt]
+      properties:
+        screeningId:
+          type: string
+        interviewDate:
+          type: string
+        healthFacility:
+          type: string
+        dob:
+          type: ["string", "null"]
+        ageYears:
+          type: ["integer", "null"]
+        ageMonths:
+          type: ["integer", "null"]
+        height:
+          type: ["number", "null"]
+        weight:
+          type: ["number", "null"]
+        temperature:
+          type: ["number", "null"]
+        respRate:
+          type: ["integer", "null"]
+        pulseRate:
+          type: ["integer", "null"]
+        bloodPressure:
+          type: ["string", "null"]
+        lmp:
+          type: ["string", "null"]
+        fundalHeight:
+          type: ["number", "null"]
+        inclusion1:
+          type: ["string", "null"]
+        inclusion2:
+          type: ["string", "null"]
+        inclusion3:
+          type: ["string", "null"]
+        inclusion4:
+          type: ["string", "null"]
+        inclusion5:
+          type: ["string", "null"]
+        exclusion1:
+          type: ["string", "null"]
+        exclusion2:
+          type: ["string", "null"]
+        exclusion3:
+          type: ["string", "null"]
+        eligible:
+          type: ["string", "null"]
+        consented:
+          type: ["string", "null"]
+        bmi:
+          type: ["number", "null"]
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: ["string", "null"]
+
+    ScreeningInput:
+      type: object
+      required: [interviewDate, healthFacility]
+      properties:
+        interviewDate:
+          type: string
+        healthFacility:
+          type: string
+        dob:
+          type: string
+        ageYears:
+          type: integer
+        ageMonths:
+          type: integer
+        height:
+          type: number
+        weight:
+          type: number
+        temperature:
+          type: number
+        respRate:
+          type: integer
+        pulseRate:
+          type: integer
+        bloodPressure:
+          type: string
+        lmp:
+          type: string
+        fundalHeight:
+          type: number
+        inclusion1:
+          type: string
+        inclusion2:
+          type: string
+        inclusion3:
+          type: string
+        inclusion4:
+          type: string
+        inclusion5:
+          type: string
+        exclusion1:
+          type: string
+        exclusion2:
+          type: string
+        exclusion3:
+          type: string
+        eligible:
+          type: string
+        consented:
+          type: string
+
+    ScreeningUpdate:
+      type: object
+      properties:
+        interviewDate:
+          type: string
+        healthFacility:
+          type: string
+        dob:
+          type: string
+        ageYears:
+          type: integer
+        ageMonths:
+          type: integer
+        height:
+          type: number
+        weight:
+          type: number
+        temperature:
+          type: number
+        respRate:
+          type: integer
+        pulseRate:
+          type: integer
+        bloodPressure:
+          type: string
+        lmp:
+          type: string
+        fundalHeight:
+          type: number
+        inclusion1:
+          type: string
+        inclusion2:
+          type: string
+        inclusion3:
+          type: string
+        inclusion4:
+          type: string
+        inclusion5:
+          type: string
+        exclusion1:
+          type: string
+        exclusion2:
+          type: string
+        exclusion3:
+          type: string
+        eligible:
+          type: string
+        consented:
+          type: string
+        reason:
+          type: string
+
+    ScreeningSummary:
+      type: object
+      required: [screeningId, healthFacility]
+      properties:
+        screeningId:
+          type: string
+        healthFacility:
+          type: string
+        interviewDate:
+          type: ["string", "null"]
+
+    # Enrolment
+    Enrolment:
+      type: object
+      required: [id, screeningId, createdBy, createdAt]
+      properties:
+        id:
+          type: integer
+        screeningId:
+          type: string
+        maritalStatus:
+          type: ["string", "null"]
+        husbandName:
+          type: ["string", "null"]
+        village:
+          type: ["string", "null"]
+        education:
+          type: ["string", "null"]
+        occupation:
+          type: ["string", "null"]
+        height:
+          type: ["number", "null"]
+        weight:
+          type: ["number", "null"]
+        temperature:
+          type: ["number", "null"]
+        respRate:
+          type: ["integer", "null"]
+        pulseRate:
+          type: ["integer", "null"]
+        bloodPressure:
+          type: ["string", "null"]
+        gestationalAge:
+          type: ["integer", "null"]
+        bmi:
+          type: ["number", "null"]
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: ["string", "null"]
+
+    EnrolmentInput:
+      type: object
+      required: [screeningId]
+      properties:
+        screeningId:
+          type: string
+        maritalStatus:
+          type: string
+        husbandName:
+          type: string
+        village:
+          type: string
+        education:
+          type: string
+        occupation:
+          type: string
+        height:
+          type: number
+        weight:
+          type: number
+        temperature:
+          type: number
+        respRate:
+          type: integer
+        pulseRate:
+          type: integer
+        bloodPressure:
+          type: string
+        gestationalAge:
+          type: integer
+
+    EnrolmentUpdate:
+      type: object
+      properties:
+        maritalStatus:
+          type: string
+        husbandName:
+          type: string
+        village:
+          type: string
+        education:
+          type: string
+        occupation:
+          type: string
+        height:
+          type: number
+        weight:
+          type: number
+        temperature:
+          type: number
+        respRate:
+          type: integer
+        pulseRate:
+          type: integer
+        bloodPressure:
+          type: string
+        gestationalAge:
+          type: integer
+        reason:
+          type: string
+
+    # ANC Visit
+    AncVisit:
+      type: object
+      required: [id, screeningId, visitNumber, visitDate, createdBy, createdAt]
+      properties:
+        id:
+          type: integer
+        screeningId:
+          type: string
+        visitNumber:
+          type: integer
+        visitDate:
+          type: string
+        gestationalAge:
+          type: ["integer", "null"]
+        weight:
+          type: ["number", "null"]
+        bp:
+          type: ["string", "null"]
+        fundalHeight:
+          type: ["number", "null"]
+        muac:
+          type: ["number", "null"]
+        complaints:
+          type: ["string", "null"]
+        medication:
+          type: ["string", "null"]
+        nextAppointment:
+          type: ["string", "null"]
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+
+    AncVisitInput:
+      type: object
+      required: [screeningId, visitNumber, visitDate]
+      properties:
+        screeningId:
+          type: string
+        visitNumber:
+          type: integer
+        visitDate:
+          type: string
+        gestationalAge:
+          type: integer
+        weight:
+          type: number
+        bp:
+          type: string
+        fundalHeight:
+          type: number
+        muac:
+          type: number
+        complaints:
+          type: string
+        medication:
+          type: string
+        nextAppointment:
+          type: string
+
+    AncVisitUpdate:
+      type: object
+      properties:
+        visitDate:
+          type: string
+        gestationalAge:
+          type: integer
+        weight:
+          type: number
+        bp:
+          type: string
+        fundalHeight:
+          type: number
+        muac:
+          type: number
+        complaints:
+          type: string
+        medication:
+          type: string
+        nextAppointment:
+          type: string
+        reason:
+          type: string
+
+    # Delivery
+    Delivery:
+      type: object
+      required: [id, screeningId, createdBy, createdAt]
+      properties:
+        id:
+          type: integer
+        screeningId:
+          type: string
+        motherWeight:
+          type: ["number", "null"]
+        temperature:
+          type: ["number", "null"]
+        respRate:
+          type: ["integer", "null"]
+        pulseRate:
+          type: ["integer", "null"]
+        bloodPressure:
+          type: ["string", "null"]
+        oxygenSaturation:
+          type: ["number", "null"]
+        bmi:
+          type: ["number", "null"]
+        physicalAbnormality:
+          type: ["string", "null"]
+        abnormalityDetails:
+          type: ["string", "null"]
+        deliveryDate:
+          type: ["string", "null"]
+        deliveryTime:
+          type: ["string", "null"]
+        deliveryPlace:
+          type: ["string", "null"]
+        deliveredBy:
+          type: ["string", "null"]
+        deliveryMode:
+          type: ["string", "null"]
+        csectionIndication:
+          type: ["string", "null"]
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: ["string", "null"]
+
+    DeliveryInput:
+      type: object
+      required: [screeningId]
+      properties:
+        screeningId:
+          type: string
+        motherWeight:
+          type: number
+        temperature:
+          type: number
+        respRate:
+          type: integer
+        pulseRate:
+          type: integer
+        bloodPressure:
+          type: string
+        oxygenSaturation:
+          type: number
+        physicalAbnormality:
+          type: string
+        abnormalityDetails:
+          type: string
+        deliveryDate:
+          type: string
+        deliveryTime:
+          type: string
+        deliveryPlace:
+          type: string
+        deliveredBy:
+          type: string
+        deliveryMode:
+          type: string
+        csectionIndication:
+          type: string
+
+    DeliveryUpdate:
+      type: object
+      properties:
+        motherWeight:
+          type: number
+        temperature:
+          type: number
+        respRate:
+          type: integer
+        pulseRate:
+          type: integer
+        bloodPressure:
+          type: string
+        oxygenSaturation:
+          type: number
+        physicalAbnormality:
+          type: string
+        abnormalityDetails:
+          type: string
+        deliveryDate:
+          type: string
+        deliveryTime:
+          type: string
+        deliveryPlace:
+          type: string
+        deliveredBy:
+          type: string
+        deliveryMode:
+          type: string
+        csectionIndication:
+          type: string
+        reason:
+          type: string
+
+    # Closeout
+    Closeout:
+      type: object
+      required: [id, screeningId, terminationDate, participantStatus, createdBy, createdAt]
+      properties:
+        id:
+          type: integer
+        screeningId:
+          type: string
+        terminationDate:
+          type: string
+        participantStatus:
+          type: string
+        discontinuationReason:
+          type: ["string", "null"]
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+
+    CloseoutInput:
+      type: object
+      required: [screeningId, terminationDate, participantStatus]
+      properties:
+        screeningId:
+          type: string
+        terminationDate:
+          type: string
+        participantStatus:
+          type: string
+        discontinuationReason:
+          type: string
+
+    CloseoutUpdate:
+      type: object
+      properties:
+        terminationDate:
+          type: string
+        participantStatus:
+          type: string
+        discontinuationReason:
+          type: string
+        reason:
+          type: string
+
+    # Audit
+    AuditLog:
+      type: object
+      required: [id, tableName, recordId, action, userInitials, timestamp]
+      properties:
+        id:
+          type: integer
+        tableName:
+          type: string
+        recordId:
+          type: string
+        action:
+          type: string
+        oldValue:
+          type: ["string", "null"]
+        newValue:
+          type: ["string", "null"]
+        reasonForChange:
+          type: ["string", "null"]
+        userInitials:
+          type: string
+        timestamp:
+          type: string
+
+    # Reports
+    DashboardSummary:
+      type: object
+      required: [screened, enrolled, ancVisits, deliveries, closeouts]
+      properties:
+        screened:
+          type: integer
+        enrolled:
+          type: integer
+        ancVisits:
+          type: integer
+        deliveries:
+          type: integer
+        closeouts:
+          type: integer
+
+    SiteSummary:
+      type: object
+      required: [facility, screened, enrolled, deliveries]
+      properties:
+        facility:
+          type: string
+        screened:
+          type: integer
+        enrolled:
+          type: integer
+        deliveries:
+          type: integer
+
+    DataQualityReport:
+      type: object
+      required: [missingDob, missingWeight, missingBp, bmiUnder15, bmiOver45, missingConsent, missingDeliveryDate]
+      properties:
+        missingDob:
+          type: array
+          items:
+            type: string
+        missingWeight:
+          type: array
+          items:
+            type: string
+        missingBp:
+          type: array
+          items:
+            type: string
+        bmiUnder15:
+          type: array
+          items:
+            type: string
+        bmiOver45:
+          type: array
+          items:
+            type: string
+        missingConsent:
+          type: array
+          items:
+            type: string
+        missingDeliveryDate:
+          type: array
+          items:
+            type: string
+
+    Reminder:
+      type: object
+      required: [screeningId, type, dueDate, message]
+      properties:
+        screeningId:
+          type: string
+        type:
+          type: string
+        dueDate:
+          type: string
+        message:
+          type: string
+        healthFacility:
+          type: ["string", "null"]

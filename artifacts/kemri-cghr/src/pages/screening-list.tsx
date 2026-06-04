@@ -1,0 +1,119 @@
+import { useListScreenings } from "@workspace/api-client-react";
+import { Link } from "wouter";
+import { useAuth } from "@/lib/auth";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plus, Search } from "lucide-react";
+import { useState } from "react";
+import { ParticipantStatusBadge } from "@/components/status-badge";
+
+export default function ScreeningList() {
+  const { user } = useAuth();
+  const [facility, setFacility] = useState<string>("");
+  const [search, setSearch] = useState<string>("");
+
+  const { data: screenings, isLoading } = useListScreenings({ 
+    facility: facility === "all" ? undefined : facility,
+    search: search || undefined
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Screening Records</h1>
+          <p className="text-muted-foreground">Manage participant screening and eligibility</p>
+        </div>
+        {user?.role === "data_manager" && (
+          <Link href="/screening/new">
+            <Button className="font-semibold shadow-sm">
+              <Plus className="w-4 h-4 mr-2" />
+              New Screening
+            </Button>
+          </Link>
+        )}
+      </div>
+
+      <Card className="shadow-sm border-primary/10">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg">Filter & Search</CardTitle>
+          <div className="flex flex-col md:flex-row gap-4 mt-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder="Search by ID..." 
+                className="pl-9"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="w-full md:w-[200px]">
+              <Select value={facility} onValueChange={setFacility}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Facilities" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Facilities</SelectItem>
+                  <SelectItem value="Bondo">Bondo</SelectItem>
+                  <SelectItem value="Siaya">Siaya</SelectItem>
+                  <SelectItem value="Kuoyo">Kuoyo</SelectItem>
+                  <SelectItem value="Lumumba">Lumumba</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="space-y-2">
+              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+            </div>
+          ) : (
+            <div className="rounded-md border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50 border-b">
+                  <tr>
+                    <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Screening ID</th>
+                    <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Date</th>
+                    <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Facility</th>
+                    <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
+                    <th className="h-10 px-4 text-right align-middle font-medium text-muted-foreground">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {screenings?.map((screening) => (
+                    <tr key={screening.screeningId} className="border-b transition-colors hover:bg-muted/50">
+                      <td className="p-4 align-middle font-medium text-primary">
+                        <Link href={`/screening/${screening.screeningId}`} className="hover:underline">
+                          {screening.screeningId}
+                        </Link>
+                      </td>
+                      <td className="p-4 align-middle">{screening.interviewDate}</td>
+                      <td className="p-4 align-middle">{screening.healthFacility}</td>
+                      <td className="p-4 align-middle">
+                        <ParticipantStatusBadge eligible={screening.eligible} consented={screening.consented} />
+                      </td>
+                      <td className="p-4 align-middle text-right">
+                        <Link href={`/screening/${screening.screeningId}`}>
+                          <Button variant="ghost" size="sm">View</Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                  {!screenings?.length && (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-muted-foreground">No screening records found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
