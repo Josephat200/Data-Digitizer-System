@@ -4,8 +4,10 @@ import { useListAncVisits, type AncVisit } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Activity } from "lucide-react";
+import { Search, Activity, Download, Printer } from "lucide-react";
+import { downloadCsv, todayStamp } from "@/lib/export";
 
 export default function AncList() {
   const [search, setSearch] = useState("");
@@ -15,17 +17,48 @@ export default function AncList() {
     !search || v.screeningId.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleExport = () => {
+    downloadCsv(`KEMRI_CGHR_ANC_Visits_${todayStamp()}.csv`, filtered as Record<string, unknown>[], [
+      { key: "screeningId", label: "Screening ID" },
+      { key: "visitNumber", label: "Visit Number" },
+      { key: "visitDate", label: "Visit Date" },
+      { key: "gestationalAge", label: "Gestational Age (wks)" },
+      { key: "weight", label: "Weight (kg)" },
+      { key: "bp", label: "Blood Pressure" },
+      { key: "fundalHeight", label: "Fundal Height (cm)" },
+      { key: "muac", label: "MUAC (cm)" },
+      { key: "complaints", label: "Complaints" },
+      { key: "medication", label: "Medication" },
+      { key: "nextAppointment", label: "Next Appointment" },
+      { key: "createdBy", label: "Recorded By" },
+      { key: "createdAt", label: "Created At" },
+    ]);
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-primary">ANC Visits</h1>
           <p className="text-muted-foreground text-sm">All antenatal care visits</p>
         </div>
-        <Badge variant="secondary" className="text-sm px-3 py-1">{visits?.length ?? 0} total</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-sm px-3 py-1">{visits?.length ?? 0} total</Badge>
+          <Button variant="outline" size="sm" className="no-print" onClick={() => window.print()}>
+            <Printer className="w-4 h-4 mr-2" />Print
+          </Button>
+          <Button variant="outline" size="sm" className="no-print" onClick={handleExport} disabled={!filtered.length}>
+            <Download className="w-4 h-4 mr-2" />Export CSV
+          </Button>
+        </div>
       </div>
 
-      <div className="relative max-w-sm">
+      {/* Print header */}
+      <div className="print-header hidden">
+        <p className="text-xs text-gray-500">KEMRI-CGHR Influenza Program CDMS &nbsp;·&nbsp; ANC Visits &nbsp;·&nbsp; Printed: {new Date().toLocaleString()}</p>
+      </div>
+
+      <div className="relative max-w-sm no-print">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input className="pl-9" placeholder="Search by Screening ID..." value={search} onChange={e => setSearch(e.target.value)} />
       </div>

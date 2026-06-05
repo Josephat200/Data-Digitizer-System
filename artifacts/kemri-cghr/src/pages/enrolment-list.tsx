@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { useListEnrolments, type Enrolment } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, ClipboardList } from "lucide-react";
+import { Search, ClipboardList, Download, Printer } from "lucide-react";
+import { downloadCsv, todayStamp } from "@/lib/export";
 
 export default function EnrolmentList() {
   const [search, setSearch] = useState("");
@@ -16,17 +18,51 @@ export default function EnrolmentList() {
     (e.village ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleExport = () => {
+    downloadCsv(`KEMRI_CGHR_Enrolments_${todayStamp()}.csv`, filtered as Record<string, unknown>[], [
+      { key: "screeningId", label: "Screening ID" },
+      { key: "maritalStatus", label: "Marital Status" },
+      { key: "husbandName", label: "Husband Name" },
+      { key: "village", label: "Village" },
+      { key: "education", label: "Education" },
+      { key: "occupation", label: "Occupation" },
+      { key: "gestationalAge", label: "Gestational Age (wks)" },
+      { key: "height", label: "Height (cm)" },
+      { key: "weight", label: "Weight (kg)" },
+      { key: "bmi", label: "BMI" },
+      { key: "temperature", label: "Temperature (°C)" },
+      { key: "respRate", label: "Resp Rate (/min)" },
+      { key: "pulseRate", label: "Pulse Rate (/min)" },
+      { key: "bloodPressure", label: "Blood Pressure" },
+      { key: "createdBy", label: "Recorded By" },
+      { key: "createdAt", label: "Created At" },
+    ]);
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-primary">Enrolments</h1>
           <p className="text-muted-foreground text-sm">All enrolled participants</p>
         </div>
-        <Badge variant="secondary" className="text-sm px-3 py-1">{enrolments?.length ?? 0} total</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-sm px-3 py-1">{enrolments?.length ?? 0} total</Badge>
+          <Button variant="outline" size="sm" className="no-print" onClick={() => window.print()}>
+            <Printer className="w-4 h-4 mr-2" />Print
+          </Button>
+          <Button variant="outline" size="sm" className="no-print" onClick={handleExport} disabled={!filtered.length}>
+            <Download className="w-4 h-4 mr-2" />Export CSV
+          </Button>
+        </div>
       </div>
 
-      <div className="relative max-w-sm">
+      {/* Print header */}
+      <div className="print-header hidden">
+        <p className="text-xs text-gray-500">KEMRI-CGHR Influenza Program CDMS &nbsp;·&nbsp; Enrolments &nbsp;·&nbsp; Printed: {new Date().toLocaleString()}</p>
+      </div>
+
+      <div className="relative max-w-sm no-print">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input className="pl-9" placeholder="Search by ID or village..." value={search} onChange={e => setSearch(e.target.value)} />
       </div>

@@ -4,8 +4,10 @@ import { useListDeliveries, type Delivery } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Baby } from "lucide-react";
+import { Search, Baby, Download, Printer } from "lucide-react";
+import { downloadCsv, todayStamp } from "@/lib/export";
 
 export default function DeliveryList() {
   const [search, setSearch] = useState("");
@@ -15,17 +17,50 @@ export default function DeliveryList() {
     !search || d.screeningId.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleExport = () => {
+    downloadCsv(`KEMRI_CGHR_Deliveries_${todayStamp()}.csv`, filtered as Record<string, unknown>[], [
+      { key: "screeningId", label: "Screening ID" },
+      { key: "deliveryDate", label: "Delivery Date" },
+      { key: "deliveryTime", label: "Delivery Time" },
+      { key: "deliveryPlace", label: "Delivery Place" },
+      { key: "deliveredBy", label: "Delivered By" },
+      { key: "deliveryMode", label: "Delivery Mode" },
+      { key: "csectionIndication", label: "C-Section Indication" },
+      { key: "motherWeight", label: "Mother Weight (kg)" },
+      { key: "temperature", label: "Temperature (°C)" },
+      { key: "bloodPressure", label: "Blood Pressure" },
+      { key: "oxygenSaturation", label: "O2 Saturation (%)" },
+      { key: "physicalAbnormality", label: "Physical Abnormality" },
+      { key: "abnormalityDetails", label: "Abnormality Details" },
+      { key: "createdBy", label: "Recorded By" },
+      { key: "createdAt", label: "Created At" },
+    ]);
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-primary">Deliveries</h1>
           <p className="text-muted-foreground text-sm">All delivery records</p>
         </div>
-        <Badge variant="secondary" className="text-sm px-3 py-1">{deliveries?.length ?? 0} total</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-sm px-3 py-1">{deliveries?.length ?? 0} total</Badge>
+          <Button variant="outline" size="sm" className="no-print" onClick={() => window.print()}>
+            <Printer className="w-4 h-4 mr-2" />Print
+          </Button>
+          <Button variant="outline" size="sm" className="no-print" onClick={handleExport} disabled={!filtered.length}>
+            <Download className="w-4 h-4 mr-2" />Export CSV
+          </Button>
+        </div>
       </div>
 
-      <div className="relative max-w-sm">
+      {/* Print header */}
+      <div className="print-header hidden">
+        <p className="text-xs text-gray-500">KEMRI-CGHR Influenza Program CDMS &nbsp;·&nbsp; Deliveries &nbsp;·&nbsp; Printed: {new Date().toLocaleString()}</p>
+      </div>
+
+      <div className="relative max-w-sm no-print">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input className="pl-9" placeholder="Search by Screening ID..." value={search} onChange={e => setSearch(e.target.value)} />
       </div>

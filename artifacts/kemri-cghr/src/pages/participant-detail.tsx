@@ -17,7 +17,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DeleteDialog } from "@/components/delete-dialog";
 import { ParticipantStatusBadge } from "@/components/status-badge";
 import {
-  ArrowLeft, Edit, Plus, User, ClipboardList, Activity, Baby, FileX
+  ArrowLeft, Edit, Plus, User, ClipboardList, Activity, Baby, FileX, Printer
 } from "lucide-react";
 import EnrolmentTab from "./participant-tabs/enrolment-tab";
 import AncTab from "./participant-tabs/anc-tab";
@@ -95,17 +95,22 @@ export default function ParticipantDetail() {
             <p className="text-muted-foreground text-sm">{screening.healthFacility} · {screening.interviewDate}</p>
           </div>
         </div>
-        {user?.role === "data_manager" && (
-          <div className="flex gap-2">
-            <Link href={`/screening/${id}/edit`}>
-              <Button variant="outline" size="sm"><Edit className="w-4 h-4 mr-2" />Edit</Button>
-            </Link>
-            <DeleteDialog
-              onConfirm={handleDelete}
-              trigger={<Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10">Delete</Button>}
-            />
-          </div>
-        )}
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="no-print" onClick={() => window.print()}>
+            <Printer className="w-4 h-4 mr-2" />Print
+          </Button>
+          {user?.role === "data_manager" && (
+            <>
+              <Link href={`/screening/${id}/edit`}>
+                <Button variant="outline" size="sm" className="no-print"><Edit className="w-4 h-4 mr-2" />Edit</Button>
+              </Link>
+              <DeleteDialog
+                onConfirm={handleDelete}
+                trigger={<Button variant="outline" size="sm" className="no-print text-destructive border-destructive/30 hover:bg-destructive/10">Delete</Button>}
+              />
+            </>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}

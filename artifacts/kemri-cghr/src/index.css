@@ -188,3 +188,65 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* ── Watermark element (hidden on screen) ── */
+.kemri-watermark {
+  display: none;
+}
+
+/* ── Print styles ── */
+@media print {
+  /* Show watermark, fixed = repeats on every page */
+  .kemri-watermark {
+    display: block !important;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-35deg);
+    font-size: 72pt;
+    font-weight: 900;
+    color: rgba(0, 63, 135, 0.13);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 9999;
+    letter-spacing: 0.12em;
+    font-family: Arial, sans-serif;
+    text-transform: uppercase;
+  }
+
+  /* Hide sidebar, nav buttons, action buttons */
+  .no-print,
+  aside {
+    display: none !important;
+  }
+
+  /* Full width content */
+  main {
+    margin-left: 0 !important;
+    padding: 16px !important;
+  }
+
+  /* Print header shown only when printing */
+  .print-header {
+    display: block !important;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #003F87;
+  }
+
+  /* General print cleanup */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+
+  .shadow-sm,
+  .shadow {
+    box-shadow: none !important;
+  }
+}

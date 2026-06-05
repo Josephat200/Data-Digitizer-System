@@ -26,6 +26,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-muted/30">
+      {/* Watermark – hidden on screen, appears on every printed page */}
+      <div className="kemri-watermark" aria-hidden="true">KEMRI&nbsp;&nbsp;CGHR</div>
+
       {/* Sidebar */}
       <aside className="w-64 flex flex-col bg-sidebar border-r border-sidebar-border text-sidebar-foreground shadow-sm z-10">
         <div className="p-4 border-b border-sidebar-border/50">
