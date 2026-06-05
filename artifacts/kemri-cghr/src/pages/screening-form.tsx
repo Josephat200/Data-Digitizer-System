@@ -107,8 +107,29 @@ export default function ScreeningForm() {
   );
   const bmiWarning = isBmiAbnormal(bmi);
 
+  const ageYearsNum = form.ageYears ? parseInt(form.ageYears) : null;
+  const ageOutOfRange = ageYearsNum !== null && (ageYearsNum < 15 || ageYearsNum > 49);
+
   const set = (key: keyof typeof form) => (value: string) => setForm(f => ({ ...f, [key]: value }));
   const setInput = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm(f => ({ ...f, [key]: e.target.value }));
+
+  const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const dob = e.target.value;
+    setForm(f => {
+      const next = { ...f, dob };
+      if (dob) {
+        const today = new Date();
+        const birth = new Date(dob);
+        let years = today.getFullYear() - birth.getFullYear();
+        let months = today.getMonth() - birth.getMonth();
+        if (today.getDate() < birth.getDate()) months--;
+        if (months < 0) { years--; months += 12; }
+        next.ageYears = years >= 0 ? years.toString() : "";
+        next.ageMonths = months >= 0 ? months.toString() : "";
+      }
+      return next;
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,16 +231,26 @@ export default function ScreeningForm() {
           <CardHeader className="pb-4">
             <CardTitle className="text-base">Demographics</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField label="Date of Birth">
-              <Input type="date" value={form.dob} onChange={setInput("dob")} />
-            </FormField>
-            <FormField label="Age (Years)">
-              <Input type="number" min="0" value={form.ageYears} onChange={setInput("ageYears")} placeholder="e.g. 28" />
-            </FormField>
-            <FormField label="Age (Months)">
-              <Input type="number" min="0" max="11" value={form.ageMonths} onChange={setInput("ageMonths")} placeholder="e.g. 6" />
-            </FormField>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField label="Date of Birth">
+                <Input type="date" value={form.dob} onChange={handleDobChange} />
+              </FormField>
+              <FormField label="Age (Years)">
+                <Input type="number" min="0" max="99" value={form.ageYears} onChange={setInput("ageYears")} placeholder="e.g. 28" />
+              </FormField>
+              <FormField label="Age (Months)">
+                <Input type="number" min="0" max="11" value={form.ageMonths} onChange={setInput("ageMonths")} placeholder="e.g. 6" />
+              </FormField>
+            </div>
+            {ageOutOfRange && (
+              <Alert variant="destructive">
+                <AlertTriangle className="w-4 h-4" />
+                <AlertDescription>
+                  Age {ageYearsNum} is outside the eligible range (15–49 years). This participant does not meet the age inclusion criterion.
+                </AlertDescription>
+              </Alert>
+            )}
           </CardContent>
         </Card>
 

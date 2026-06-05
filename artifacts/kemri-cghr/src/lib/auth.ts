@@ -8,15 +8,26 @@ interface AuthState {
   logout: () => void;
 }
 
+function loadUser(): User | null {
+  try {
+    const s = localStorage.getItem("auth_user");
+    return s ? JSON.parse(s) : null;
+  } catch {
+    return null;
+  }
+}
+
 export const useAuth = create<AuthState>((set) => ({
   token: localStorage.getItem("auth_token"),
-  user: null, // Should ideally be persisted or fetched on load, but we rely on useGetMe
+  user: loadUser(),
   setAuth: (token, user) => {
     localStorage.setItem("auth_token", token);
+    localStorage.setItem("auth_user", JSON.stringify(user));
     set({ token, user });
   },
   logout: () => {
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
     set({ token: null, user: null });
     window.location.href = import.meta.env.BASE_URL + "login";
   },

@@ -12,6 +12,10 @@ import Dashboard from "@/pages/dashboard";
 import ScreeningList from "@/pages/screening-list";
 import ScreeningForm from "@/pages/screening-form";
 import ParticipantDetail from "@/pages/participant-detail";
+import EnrolmentList from "@/pages/enrolment-list";
+import AncList from "@/pages/anc-list";
+import DeliveryList from "@/pages/delivery-list";
+import CloseoutList from "@/pages/closeout-list";
 import AuditLog from "@/pages/audit-log";
 import Reports from "@/pages/reports";
 import NotFound from "@/pages/not-found";
@@ -89,6 +93,10 @@ function Router() {
       <Route path="/screening/new"><ProtectedRoute component={ScreeningForm} /></Route>
       <Route path="/screening/:id/edit"><ProtectedRoute component={ScreeningForm} /></Route>
       <Route path="/screening/:id"><ProtectedRoute component={ParticipantDetail} /></Route>
+      <Route path="/enrolment"><ProtectedRoute component={EnrolmentList} /></Route>
+      <Route path="/anc"><ProtectedRoute component={AncList} /></Route>
+      <Route path="/delivery"><ProtectedRoute component={DeliveryList} /></Route>
+      <Route path="/closeout"><ProtectedRoute component={CloseoutList} /></Route>
       <Route path="/audit"><ProtectedRoute component={AuditLog} /></Route>
       <Route path="/reports"><ProtectedRoute component={Reports} /></Route>
       <Route component={NotFound} />
