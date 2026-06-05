@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, FileX, Download, Printer } from "lucide-react";
+import { Search, FileX, Download, Printer, Plus } from "lucide-react";
 import { downloadCsv, todayStamp } from "@/lib/export";
+import { NewRecordDialog } from "@/components/new-record-dialog";
 
 function StatusBadge({ status }: { status?: string | null }) {
   if (!status) return <span className="text-muted-foreground/50 italic text-xs">—</span>;
@@ -53,6 +54,14 @@ export default function CloseoutList() {
           <Button variant="outline" size="sm" className="no-print" onClick={handleExport} disabled={!filtered.length}>
             <Download className="w-4 h-4 mr-2" />Export CSV
           </Button>
+          <NewRecordDialog
+            type="closeout"
+            trigger={
+              <Button size="sm" className="no-print font-semibold">
+                <Plus className="w-4 h-4 mr-2" />New Closeout
+              </Button>
+            }
+          />
         </div>
       </div>
 

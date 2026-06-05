@@ -1,4 +1,5 @@
-import { useParams } from "wouter";
+import { useState, useEffect } from "react";
+import { useParams, useSearch } from "wouter";
 import { Link } from "wouter";
 import {
   useGetScreening, useGetEnrolment, useListAncVisits, useGetDelivery, useGetCloseout,
@@ -40,9 +41,13 @@ function YesNoBadge({ value }: { value?: string | null }) {
 
 export default function ParticipantDetail() {
   const { id } = useParams<{ id: string }>();
+  const search = useSearch();
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const qc = useQueryClient();
+
+  const requestedTab = new URLSearchParams(search).get("tab") ?? "";
+  const [activeTab, setActiveTab] = useState("screening");
 
   const { data: screening, isLoading } = useGetScreening(id);
   const { data: enrolment } = useGetEnrolment(id);
@@ -54,6 +59,13 @@ export default function ParticipantDetail() {
 
   const isEnrolled = !!enrolment;
   const canEnrol = screening?.eligible === "Yes" && screening?.consented === "Yes";
+
+  useEffect(() => {
+    if (!requestedTab) return;
+    if (requestedTab === "enrolment" && canEnrol) setActiveTab("enrolment");
+    else if ((requestedTab === "anc" || requestedTab === "delivery") && isEnrolled) setActiveTab(requestedTab);
+    else if (requestedTab === "closeout") setActiveTab("closeout");
+  }, [requestedTab, canEnrol, isEnrolled]);
 
   const handleDelete = async (reason: string) => {
     await deleteMutation.mutateAsync({ screeningId: id, data: { reason } });
@@ -114,7 +126,7 @@ export default function ParticipantDetail() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="screening">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-5 w-full max-w-2xl">
           <TabsTrigger value="screening" className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" />Screening</TabsTrigger>
           <TabsTrigger value="enrolment" disabled={!canEnrol} className="flex items-center gap-1.5"><ClipboardList className="w-3.5 h-3.5" />Enrolment</TabsTrigger>

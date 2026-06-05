@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Baby, Download, Printer } from "lucide-react";
+import { Search, Baby, Download, Printer, Plus } from "lucide-react";
 import { downloadCsv, todayStamp } from "@/lib/export";
+import { NewRecordDialog } from "@/components/new-record-dialog";
 
 export default function DeliveryList() {
   const [search, setSearch] = useState("");
@@ -52,6 +53,14 @@ export default function DeliveryList() {
           <Button variant="outline" size="sm" className="no-print" onClick={handleExport} disabled={!filtered.length}>
             <Download className="w-4 h-4 mr-2" />Export CSV
           </Button>
+          <NewRecordDialog
+            type="delivery"
+            trigger={
+              <Button size="sm" className="no-print font-semibold">
+                <Plus className="w-4 h-4 mr-2" />New Delivery
+              </Button>
+            }
+          />
         </div>
       </div>
 
