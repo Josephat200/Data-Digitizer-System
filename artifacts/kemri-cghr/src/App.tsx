@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { setupApi } from "./lib/api";
 import { useAuth } from "./lib/auth";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { useGetMe } from "@workspace/api-client-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -56,6 +57,26 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   );
 }
 
+function AdminRoute({ component: Component }: { component: React.ComponentType }) {
+  const { token } = useAuth();
+  const { data: user } = useGetMe();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!token) { setLocation("/login"); return; }
+    if (user && user.role !== "data_manager") setLocation("/dashboard");
+  }, [token, user, setLocation]);
+
+  if (!token || !user) return null;
+  if (user.role !== "data_manager") return null;
+
+  return (
+    <AppLayout>
+      <Component />
+    </AppLayout>
+  );
+}
+
 function Router() {
   const { token, logout } = useAuth();
   const [, setLocation] = useLocation();
@@ -97,8 +118,8 @@ function Router() {
       <Route path="/anc"><ProtectedRoute component={AncList} /></Route>
       <Route path="/delivery"><ProtectedRoute component={DeliveryList} /></Route>
       <Route path="/closeout"><ProtectedRoute component={CloseoutList} /></Route>
-      <Route path="/audit"><ProtectedRoute component={AuditLog} /></Route>
-      <Route path="/reports"><ProtectedRoute component={Reports} /></Route>
+      <Route path="/audit"><AdminRoute component={AuditLog} /></Route>
+      <Route path="/reports"><AdminRoute component={Reports} /></Route>
       <Route component={NotFound} />
     </Switch>
   );

@@ -13,6 +13,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { data: user } = useGetMe();
 
+  const isAdmin = user?.role === "data_manager";
+
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { label: "Screening", href: "/screening", icon: Users },
@@ -20,8 +22,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { label: "ANC Visits", href: "/anc", icon: Activity },
     { label: "Deliveries", href: "/delivery", icon: Baby },
     { label: "Closeouts", href: "/closeout", icon: FileX },
-    { label: "Audit Log", href: "/audit", icon: ListChecks },
-    { label: "Data Quality", href: "/reports", icon: FileText },
+    ...(isAdmin ? [
+      { label: "Audit Log", href: "/audit", icon: ListChecks },
+      { label: "Data Quality", href: "/reports", icon: FileText },
+    ] : []),
   ];
 
   return (
