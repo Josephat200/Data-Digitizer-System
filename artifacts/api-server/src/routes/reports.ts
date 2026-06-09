@@ -72,6 +72,33 @@ router.get("/reports/data-quality", requireAuth, async (_req, res): Promise<void
   });
 });
 
+router.get("/reports/monthly-trend", requireAuth, async (_req, res): Promise<void> => {
+  const [screenings, enrolments] = await Promise.all([
+    db.select({ createdAt: screeningTable.createdAt }).from(screeningTable),
+    db.select({ createdAt: enrolmentTable.createdAt }).from(enrolmentTable),
+  ]);
+
+  const now = new Date();
+  const months: Array<{ month: string; screened: number; enrolled: number }> = [];
+
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const label = d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+
+    const screened = screenings.filter(
+      (s) => s.createdAt.toISOString().substring(0, 7) === key
+    ).length;
+    const enrolled = enrolments.filter(
+      (e) => e.createdAt.toISOString().substring(0, 7) === key
+    ).length;
+
+    months.push({ month: label, screened, enrolled });
+  }
+
+  res.json(months);
+});
+
 router.get("/reports/reminders", requireAuth, async (_req, res): Promise<void> => {
   const today = new Date();
   const reminders: Array<{

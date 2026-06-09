@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { 
   useGetDashboardSummary, 
   useGetSiteSummary, 
@@ -9,11 +10,31 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+} from "recharts";
+
+type MonthlyPoint = { month: string; screened: number; enrolled: number };
+
+function useMonthlyTrend() {
+  return useQuery<MonthlyPoint[]>({
+    queryKey: ["monthly-trend"],
+    queryFn: async () => {
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch("/reports/monthly-trend", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error("Failed to fetch trend");
+      return res.json();
+    },
+  });
+}
 
 export default function Dashboard() {
   const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary();
   const { data: siteSummary, isLoading: loadingSites } = useGetSiteSummary();
   const { data: reminders, isLoading: loadingReminders } = useGetReminders();
+  const { data: trend, isLoading: loadingTrend } = useMonthlyTrend();
 
   return (
     <div className="space-y-6">
@@ -35,6 +56,9 @@ export default function Dashboard() {
 
       {/* Participant Pipeline */}
       <ParticipantPipeline summary={summary} loading={loadingSummary} />
+
+      {/* Monthly Trend Chart */}
+      <MonthlyTrendChart data={trend} loading={loadingTrend} />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         {/* Site Summary Table */}
@@ -127,6 +151,55 @@ export default function Dashboard() {
         </Card>
       </div>
     </div>
+  );
+}
+
+function MonthlyTrendChart({ data, loading }: { data?: MonthlyPoint[]; loading: boolean }) {
+  const hasData = data?.some((d) => d.screened > 0 || d.enrolled > 0);
+
+  return (
+    <Card className="shadow-sm border-primary/10">
+      <CardHeader>
+        <CardTitle>Monthly Trend</CardTitle>
+        <CardDescription>New screenings and enrolments over the past 12 months</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="h-56 flex items-center justify-center">
+            <Skeleton className="h-48 w-full rounded-lg" />
+          </div>
+        ) : !hasData ? (
+          <div className="h-56 flex items-center justify-center text-sm text-muted-foreground">
+            No data yet — start by screening participants.
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={data} margin={{ top: 4, right: 16, left: -16, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorScreened" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.18} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="colorEnrolled" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.18} />
+                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
+              <Tooltip
+                contentStyle={{ borderRadius: 8, fontSize: 12, border: "1px solid hsl(var(--border))", boxShadow: "0 4px 12px rgba(0,0,0,.08)" }}
+                labelStyle={{ fontWeight: 600 }}
+              />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+              <Area type="monotone" dataKey="screened" name="Screened" stroke="#3b82f6" strokeWidth={2} fill="url(#colorScreened)" dot={{ r: 3, fill: "#3b82f6" }} activeDot={{ r: 5 }} />
+              <Area type="monotone" dataKey="enrolled" name="Enrolled" stroke="#6366f1" strokeWidth={2} fill="url(#colorEnrolled)" dot={{ r: 3, fill: "#6366f1" }} activeDot={{ r: 5 }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
