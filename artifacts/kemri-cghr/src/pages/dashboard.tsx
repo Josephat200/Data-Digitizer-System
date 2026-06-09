@@ -4,7 +4,7 @@ import {
   useGetReminders 
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, ClipboardList, Activity, Baby, FileX, AlertCircle } from "lucide-react";
+import { Users, ClipboardList, Activity, Baby, FileX, AlertCircle, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,6 +32,9 @@ export default function Dashboard() {
         <StatCard title="Deliveries" value={summary?.deliveries} icon={Baby} loading={loadingSummary} link="/delivery" />
         <StatCard title="Closeouts" value={summary?.closeouts} icon={FileX} loading={loadingSummary} link="/closeout" />
       </div>
+
+      {/* Participant Pipeline */}
+      <ParticipantPipeline summary={summary} loading={loadingSummary} />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         {/* Site Summary Table */}
@@ -124,6 +127,79 @@ export default function Dashboard() {
         </Card>
       </div>
     </div>
+  );
+}
+
+type DashboardSummary = { screened?: number; enrolled?: number; ancVisits?: number; deliveries?: number; closeouts?: number };
+
+function ParticipantPipeline({ summary, loading }: { summary?: DashboardSummary; loading: boolean }) {
+  const screened = summary?.screened ?? 0;
+
+  const stages = [
+    { label: "Screened",  value: summary?.screened,  icon: Users,         href: "/screening", color: "bg-blue-500",   pct: 100 },
+    { label: "Enrolled",  value: summary?.enrolled,  icon: ClipboardList, href: "/enrolment", color: "bg-indigo-500", pct: screened ? Math.round(((summary?.enrolled ?? 0) / screened) * 100) : 0 },
+    { label: "ANC Visits",value: summary?.ancVisits, icon: Activity,      href: "/anc",        color: "bg-violet-500", pct: screened ? Math.round(((summary?.ancVisits ?? 0) / screened) * 100) : 0 },
+    { label: "Deliveries",value: summary?.deliveries,icon: Baby,          href: "/delivery",   color: "bg-purple-500", pct: screened ? Math.round(((summary?.deliveries ?? 0) / screened) * 100) : 0 },
+    { label: "Closeouts", value: summary?.closeouts, icon: FileX,         href: "/closeout",   color: "bg-rose-500",   pct: screened ? Math.round(((summary?.closeouts ?? 0) / screened) * 100) : 0 },
+  ];
+
+  return (
+    <Card className="shadow-sm border-primary/10">
+      <CardHeader>
+        <CardTitle>Participant Pipeline</CardTitle>
+        <CardDescription>Study progress from screening through to closeout</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex gap-3 items-center">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex-1 space-y-2">
+                <Skeleton className="h-20 w-full rounded-lg" />
+                <Skeleton className="h-3 w-3/4 mx-auto" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex items-stretch gap-1 sm:gap-2">
+            {stages.map((stage, i) => {
+              const Icon = stage.icon;
+              const barPct = Math.max(stage.pct, screened > 0 ? 4 : 0);
+              return (
+                <div key={stage.label} className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
+                  <Link href={stage.href} className="flex-1 min-w-0 group">
+                    <div className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border/60 hover:border-primary/40 hover:shadow-sm transition-all bg-card group-hover:bg-muted/30 h-full">
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center ${stage.color} text-white shadow-sm`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold tabular-nums">{stage.value ?? 0}</div>
+                        <div className="text-xs text-muted-foreground font-medium leading-tight">{stage.label}</div>
+                      </div>
+                      {/* Funnel bar */}
+                      <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${stage.color} transition-all duration-700`}
+                          style={{ width: `${barPct}%` }}
+                        />
+                      </div>
+                      <div className="text-xs font-semibold text-muted-foreground">
+                        {i === 0 ? "baseline" : `${stage.pct}%`}
+                      </div>
+                    </div>
+                  </Link>
+                  {i < stages.length - 1 && (
+                    <ArrowRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {!loading && screened === 0 && (
+          <p className="text-center text-sm text-muted-foreground mt-3">No data yet — start by screening participants.</p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
