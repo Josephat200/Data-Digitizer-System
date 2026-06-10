@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "LziXIxPHBahlngpSirvB7"
+uri = "file://exports/KEMRI_CGHR_CDMS_User_Guide.md"
+type = "text"
+title = "KEMRI-CGHR CDMS User Reference Guide"
